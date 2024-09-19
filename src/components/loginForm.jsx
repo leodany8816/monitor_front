@@ -7,7 +7,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    const LoginForm = async (evet) => {
+    const LoginForm = async (event) => {
         event.preventDefault(); // Evitar que se recargue la página
         setLoading(true); // Mostrar el estado de carga
         setError(null); // Limpiar cualquier error previo
