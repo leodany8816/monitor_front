@@ -10,7 +10,7 @@ import Header from "../components/Header.astro";
          <section class="scroll-m-20 w-full mx-auto container bg-white  m-4">
             <Header />
             <h1>Se inicia la sección <span id="idEmpresa"></span></h1>
-            <Facturas client:load />
+            <Facturas client:only="react" />
         </section>
     </main>
 </Layout>
