@@ -1,15 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Facturas  from "../components/Cfdis.jsx";
 import Header from "../components/Header.astro";
 ---
 
 <Layout title="Monitor Web">
     <main>
-        <section class="scroll-m-20 w-full mx-auto container">
+        <!-- <section class="scroll-m-20 w-full mx-auto container bg-white rounded-lg shadow dark:bg-gray-900 m-4"> -->
+         <section class="scroll-m-20 w-full mx-auto container bg-white  m-4">
             <Header />
-            <h1>Se inicia la seccion <span id="idEmpresa"></span></h1>
+            <h1>Se inicia la sección <span id="idEmpresa"></span></h1>
+            <Facturas client:only="react" />
         </section>
     </main>
 </Layout>
-
-
