@@ -1,4 +1,5 @@
 <script>
+    const role = 'admin';
     let idEmpresa, nombre, rfc, logo;
     let token = localStorage.getItem("token");
     const infoEmpresa = document.getElementById("infoEmpresa");
@@ -35,8 +36,12 @@
                     </div>
                 </div>
                 `;
-
-            infoEmpresa?.insertAdjacentHTML("beforeend", empresa);
+                if (infoEmpresa) {
+                    infoEmpresa.insertAdjacentHTML("beforeend", empresa);
+                }else{
+                    console.log('hola');
+                }
+            // infoEmpresa?.insertAdjacentHTML("beforeend", empresa);
         } else {
             console.log("no hay informacion");
         }
