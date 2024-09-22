@@ -12,6 +12,7 @@ const Facturas = () => {
     const [selectedRows, setSelectedRows] = useState([]); // Filas seleccionadas
     const [first, setFirst] = useState(0); // Índice de la primera fila visible en la página actual
     const [rowsPerPage, setRowsPerPage] = useState(2); // Cantidad de filas por página
+    const [showWarning, setShowWarning] = useState(false); // Para mostrar mensaje si no se seleccionan facturas
 
 
     useEffect(() => {
@@ -119,54 +120,76 @@ const Facturas = () => {
         );
     };
 
-    // const handleCheckboxChange = (event, rowData) => {
-    //     const { checked } = event.target;
-    //     if (checked) {
-    //         setSelectedRows(prev => [...prev, rowData]);
-    //     } else {
-    //         setSelectedRows(prev => prev.filter(row => row.id_factura !== rowData.id_factura));
-    //     }
-    // };
-
-    // const handleSelectAllChange = (event) => {
-    //     const { checked } = event.target;
-    //     if (checked) {
-    //         setSelectedRows(cfdis); // Seleccionar todas las filas
-    //     } else {
-    //         setSelectedRows([]); // Deseleccionar todas las filas
-    //     }
-    // };
-
-    // const renderHeaderCheckbox = () => {
-    //     return (
-    //         <input
-    //             type="checkbox"
-    //             checked={selectedRows.length === cfdis.length && cfdis.length > 0}
-    //             onChange={handleSelectAllChange}
-    //         />
-    //     );
-    // };
-
-    // const renderCheckbox = (rowData) => {
-    //     return (
-    //         <input
-    //             type="checkbox"
-    //             checked={selectedRows.some(row => row.id_factura === rowData.id_factura)}
-    //             onChange={(e) => handleCheckboxChange(e, rowData)}
-    //         />
-    //     );
-    // };
-
     const mostrarFacturasSeleccionadas = () => {
         const idsSeleccionados = selectedRows.map(c => c.id_factura);
+        console.log(idsSeleccionados);
         return idsSeleccionados.join(', ');
     };
+
+    /**Se envian la data de los cfdis para descargar el zip  */
+    const descargarZip = async () => {
+        setLoading(true);
+        setError(null);
+        const dataCfdis = mostrarFacturasSeleccionadas();
+        if (dataCfdis.length === 0) {
+            // Si no hay facturas seleccionadas, mostrar advertencia
+            setShowWarning(true);
+            return;
+        }
+
+        setShowWarning(false); // Ocultar la advertencia si hay selección
+        console.log('son los que se van enviar');
+        console.log(dataCfdis);
+        try {
+            const res = await fetch("http://127.0.0.1:8000/api/downloadzip", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                    cfdis: dataCfdis
+                }),
+            });
+
+            const data = await res.json();
+            console.log('respuesta de la descarga');
+            console.table(data);
+            if(data.exito){
+                let nameZip =  data.nombreZip;
+                let fileBase64 = data.file_base64;
+                downloadZip(fileBase64, nameZip);
+            }else{
+                setError('Error en la conexión ' . data.error);
+            }
+
+        } catch (err) {
+            setError('Error en la conexión ' + err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const downloadZip = (base64String, fileName) => {
+        const source = `data:application/zip;base64,${base64String}`;
+        const link = document.createElement('a');
+        link.href = source;
+        link.download = fileName;
+        link.click();
+      }
 
     return (
         <div>
             <h1>CFDIS</h1>
             {loading && <p>Cargando...</p>}
             {error && <p>{error}</p>}
+
+            {/* Mostrar advertencia si no se selecciona ninguna factura */}
+            {showWarning && <p style={{ color: 'red' }}>Debe seleccionar al menos una factura.</p>}
+
+
+
+            <button type="button" onClick={descargarZip} class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Descargar Zip</button>
             {/* Mostrar los IDs seleccionados */}
             <div>
                 <h3>Facturas Seleccionadas: {mostrarFacturasSeleccionadas()}</h3>
@@ -181,7 +204,7 @@ const Facturas = () => {
                 onPage={handlePageChange}
                 rowsPerPageOptions={[2, 4, 6]}
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-                currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                currentPageReportTemplate="{first} a {last} de {totalRecords}"
             >
                 <Column
                     header={renderHeaderCheckbox}
