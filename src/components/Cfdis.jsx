@@ -21,7 +21,8 @@ const Facturas = () => {
             setError(null);
 
             try {
-                const res = await fetch("http://127.0.0.1:8000/api/cfdi", {
+                // const res = await fetch("http://127.0.0.1:8000/api/cfdi", {
+                const res = await fetch("https://api.grupo-citi.com/api/cfdi", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -54,13 +55,14 @@ const Facturas = () => {
         { field: 'retencion', header: 'Retencion' },
         { field: 'total', header: 'Total' },
         {
-            body: () => (
-                <div className="flex items-center">
-                    <img className="h-auto max-w-s" src="img/pdf_icon.png" alt="PDF" />
-                    <img className="h-auto max-w-s" src="img/zip_icon.png" alt="ZIP" />
-                </div>
-            ),
-            header: 'Descarga'
+            // header: ''
+            // body: () => (
+            //     <div className="flex items-center">
+            //         <img className="h-auto max-w-s" src="img/pdf_icon.png" alt="PDF" />
+            //         <img className="h-auto max-w-s" src="img/zip_icon.png" alt="ZIP" onClick={renderDomwnloadPdf} />
+            //     </div>
+            // ),
+            // header: 'Descarga'
         },
     ];
 
@@ -120,9 +122,68 @@ const Facturas = () => {
         );
     };
 
+
+
+    // Funcion para renderizar la imagen en la columna y agregar el evento onclick
+    const btnImage = (rowData) => {
+        return (
+            <img
+                src="img/pdf_icon.png" alt="PDF"
+                className="h-auto max-w-s"
+                style={{ cursor: 'pointer', width: '30px' }}
+                onClick={() => downloadPDFClick(rowData.id_factura)}
+            />
+            // <div>
+            //     <a href="https://google.com" target='_blank'>
+            //     <img
+            //         src="img/pdf_icon.png" alt="PDF"
+            //         className="h-auto max-w-s"
+            //         style={{ cursor: 'pointer', width: '30px' }}
+            //     //onClick={() => handleImageClick(rowData.id_factura)}
+            //     />
+            //     </a>
+            // </div>
+        );
+    }
+
+    // Funcion para manejar el click la imagen para mostrar el pdf
+    const downloadPDFClick = async (id_factura) => {
+        setLoading(true);
+        setError(null);
+        const idfactura = id_factura;
+        try {
+            // const res = await fetch("http://127.0.0.1:8000/api/downloadpdf", {
+            const res = await fetch("https://api.grupo-citi.com/api/downloadpdf", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                    idFactura: idfactura
+                }),
+            });
+
+            const data = await res.json();
+            //console.table(data);
+            if (data.exito) {
+                let namePdf = data.nombrePdf;
+                let fileBase64 = data.file_base64;
+                downloadPdf(fileBase64, namePdf);
+                // abrirFilePdf(fileBase64);
+            }
+
+        } catch (err) {
+            setError('Error en el servicio ' + err);
+        } finally {
+            setLoading(false);
+        }
+
+    };
+
     const mostrarFacturasSeleccionadas = () => {
         const idsSeleccionados = selectedRows.map(c => c.id_factura);
-        console.log(idsSeleccionados);
+        //console.log(idsSeleccionados);
         return idsSeleccionados.join(', ');
     };
 
@@ -138,10 +199,11 @@ const Facturas = () => {
         }
 
         setShowWarning(false); // Ocultar la advertencia si hay selección
-        console.log('son los que se van enviar');
-        console.log(dataCfdis);
+        // console.log('son los que se van enviar');
+        // console.log(dataCfdis);
         try {
-            const res = await fetch("http://127.0.0.1:8000/api/downloadzip", {
+            // const res = await fetch("http://127.0.0.1:8000/api/downloadzip", {
+            const res = await fetch("https://api.grupo-citi.com/api/downloadzip", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -153,14 +215,14 @@ const Facturas = () => {
             });
 
             const data = await res.json();
-            console.log('respuesta de la descarga');
-            console.table(data);
-            if(data.exito){
-                let nameZip =  data.nombreZip;
+            // console.log('respuesta de la descarga');
+            // console.table(data);
+            if (data.exito) {
+                let nameZip = data.nombreZip;
                 let fileBase64 = data.file_base64;
                 downloadZip(fileBase64, nameZip);
-            }else{
-                setError('Error en la conexión ' . data.error);
+            } else {
+                setError('Error en la conexión '.data.error);
             }
 
         } catch (err) {
@@ -176,7 +238,29 @@ const Facturas = () => {
         link.href = source;
         link.download = fileName;
         link.click();
-      }
+    }
+
+    const downloadPdf = (base64String, fileName) => {
+        const source = `data:application/pdf;base64,${base64String}`;
+        const link = document.createElement('a');
+        link.href = source;
+        link.download = fileName;
+        link.target = '_blank';
+        link.click();
+    }
+
+    /// abrir el pdf en una nueva pestaña del navedador
+    // const abrirFilePdf = (pdfBase64) => {
+    //     const source = `data:application/pdf;base64,${pdfBase64}`;
+    //     const newWindows = window.open();
+    //     if (newWindows) {
+    //         newWindows.document.write(
+    //             `<iframe src="${source}" style="width:100%; height:100%;" frameborder="0"></iframe>`
+    //         );
+    //     } else {
+    //         setError('No se pudo abrir una nueva pestaña. Verifica los bloqueadores de ventanas emergentes.');
+    //     }
+    // }
 
     return (
         <div>
@@ -214,6 +298,10 @@ const Facturas = () => {
                 {Columns.map((col, i) => (
                     <Column key={col.field || i} field={col.field} header={col.header} body={col.body} />
                 ))}
+                <Column
+                    header="Descargar"
+                    body={btnImage}
+                />
             </DataTable>
         </div>
     );

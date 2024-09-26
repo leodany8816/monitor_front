@@ -6,7 +6,8 @@
 
     console.log("aver -> " + token);
     try {
-        const res = await fetch("http://127.0.0.1:8000/api/encabezado", {
+        // const res = await fetch("http://127.0.0.1:8000/api/encabezado", {
+            const res = await fetch("https://api.grupo-citi.com/api/encabezado", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -47,14 +48,15 @@
         }
     } catch (error) {
         console.log("Error en el servicio " + error);
-        window.location.href = "/";
+        //window.location.href = "/";
     }
 
     let btnLogout = document.getElementById("Logout");
     btnLogout?.addEventListener("click", async function () {
         console.log("hola");
         try {
-            const res = await fetch("http://127.0.0.1:8000/api/logout", {
+            // const res = await fetch("http://127.0.0.1:8000/api/logout",
+            const res = await fetch("https://api.grupo-citi.com/api/logout",  {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
