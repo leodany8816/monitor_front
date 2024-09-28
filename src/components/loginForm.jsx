@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Mensaje from './Message';
 
 const Login = () => {
     const [usuario, setUsuario] = useState('');
@@ -6,18 +7,20 @@ const Login = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [showWarning, setShowWarning] = useState(false); // Para mostrar mensaje si no se seleccionan facturas
+    const [message, setMessage] = useState('');
 
-    
+
     const getCsrfToken = async () => {
-        const response = await fetch('https://api.grupo-citi.com/api/csrf-token');
+        const response = await fetch('https://apis.grupo-citi.com/api/csrf-token');
         const data = await response.json();
         return data.csrf_token;
     };
 
 
 
-
     const LoginForm = async (event) => {
+        setShowWarning(false);
         event.preventDefault(); // Evitar que se recargue la página
         setLoading(true); // Mostrar el estado de carga
         setError(null); // Limpiar cualquier error previo
@@ -29,12 +32,14 @@ const Login = () => {
 
         try {
             // const response = await fetch('http://127.0.0.2:8000/api/login', {
-            const response = await fetch('https://api.grupo-citi.com/api/login', {
+            const response = await fetch('https://apis.grupo-citi.com/api/login', {
                 method: 'POST',
-                // credentials: 'include',
+                //credentials: 'includes',  // Incluir credenciales como cookies
                 headers: {
                     'Content-Type': 'application/json',
-                    // 'X-CSRF-TOKEN': csrfToken,
+                    // 'X-CSRF-TOKEN': `Bearer 1|${csrfToken}`,
+                    //'Accept': 'application/json',
+
                 },
                 body: JSON.stringify({ usuario, password }),
             });
@@ -48,10 +53,15 @@ const Login = () => {
                 console.log('token ' + data.token);
                 window.location.href = '/monitor'
             } else {
-                setError(data.message || 'Error en el login');
+                console.log(1);
+                setMessage(data.message);
+                setShowWarning(true);
             }
         } catch (err) {
+            console.log(2);
             setError('Error en la conexión');
+            setMessage("Los datos son obligatorios");
+            setShowWarning(true);
         } finally {
             setLoading(false); // Finalizar el estado de carga
         }
@@ -59,8 +69,19 @@ const Login = () => {
 
     return (
         <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+
+
             <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                 <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+                    {/* Mostrar advertencia si no se selecciona ninguna factura */}
+
+                    {showWarning &&
+                        <div className='mt-3'>
+
+                            <Mensaje showError={showWarning} showText={message} />
+
+                        </div>
+                    }
                     <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                         Ingresa tus credenciales
                     </h1>

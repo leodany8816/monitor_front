@@ -1,5 +1,6 @@
 <script>
     const role = 'admin';
+    const path_img= 'https://bekaert.grupo-citi.com/';
     let idEmpresa, nombre, rfc, logo;
     let token = localStorage.getItem("token");
     const infoEmpresa = document.getElementById("infoEmpresa");
@@ -7,7 +8,7 @@
     console.log("aver -> " + token);
     try {
         // const res = await fetch("http://127.0.0.1:8000/api/encabezado", {
-            const res = await fetch("https://api.grupo-citi.com/api/encabezado", {
+            const res = await fetch("https://apis.grupo-citi.com/api/encabezado", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -25,14 +26,14 @@
             let empresa = `
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
                     <div class="flex items-center">
-                      <img class="h-auto max-w-xs" src="logos/${logo}" />
+                      <img class="h-auto max-w-xs" src="${path_img}logos/${logo}" />
                     </div>
-                        <div class="flex items-center text-gray-500 dark:text-gray-400 text-3xl">
+                        <div class="flex items-center text-gray-200 dark:text-gray-400 text-3xl">
                                  ${nombre}        
                         </div>
                     
                     <div class="flex items-center">
-                            <img class="h-auto max-w-[5rem] ms-auto" src="img/officon.png" id="Logout" />  
+                            <img class="h-auto max-w-[5rem] ms-auto" src="${path_img}img/officon.png" id="Logout" />  
                           
                     </div>
                 </div>
@@ -56,7 +57,7 @@
         console.log("hola");
         try {
             // const res = await fetch("http://127.0.0.1:8000/api/logout",
-            const res = await fetch("https://api.grupo-citi.com/api/logout",  {
+            const res = await fetch("https://apis.grupo-citi.com/api/logout",  {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -78,9 +79,9 @@
     if (idEmpresa) idEmp?.prepend(idEmpresa);
 </script>
 
-<header class="bg-white">
+<header>
     <!-- <div class="w-full max-w-screen-xl mx-auto p-4 md:py-8"> -->
-    <div class="w-full max-w-screen-xl mx-auto p-4 md:py-2">
+    <div class="w-full max-w-screen-xl mx-auto p-4 md:py-2 border border-gray-700 rounded-lg shadow-lg">
         <div id="infoEmpresa"></div>
     </div>
 </header>

@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
-import "primereact/resources/themes/lara-light-cyan/theme.css"; // Tema de PrimeReact
+import Spinner from './spinner';
+import Mensaje from './Message';
+
+// import 'primereact/resources/themes/bootstrap4-dark-blue/theme.css';  // O el tema que prefieras
+// import 'primereact/resources/primereact.min.css';
+// import 'primeicons/primeicons.css';
 
 const Facturas = () => {
     const [error, setError] = useState(null);
@@ -13,6 +18,7 @@ const Facturas = () => {
     const [first, setFirst] = useState(0); // Índice de la primera fila visible en la página actual
     const [rowsPerPage, setRowsPerPage] = useState(2); // Cantidad de filas por página
     const [showWarning, setShowWarning] = useState(false); // Para mostrar mensaje si no se seleccionan facturas
+    const path_img = 'https://bekaert.grupo-citi.com/img/pdf_icon.png';
 
 
     useEffect(() => {
@@ -22,7 +28,7 @@ const Facturas = () => {
 
             try {
                 // const res = await fetch("http://127.0.0.1:8000/api/cfdi", {
-                const res = await fetch("https://api.grupo-citi.com/api/cfdi", {
+                const res = await fetch("https://apis.grupo-citi.com/api/cfdi", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -42,13 +48,13 @@ const Facturas = () => {
     }, []);
 
     const Columns = [
-        { field: 'emisor', header: 'Emisor' },
+        { field: 'emisor', header: 'Emisor', width: '150px' },
         { field: 'emisorRfc', header: 'Rfc Emisor' },
         { field: 'serie', header: 'Serie' },
         { field: 'folio', header: 'Folio' },
         { field: 'receptor', header: 'Receptor' },
         { field: 'receptorRfc', header: 'Rfc Receptor' },
-        { field: 'fechaEmision', header: 'Fecha Emision' },
+        { field: 'fechaEmision', header: 'Fecha Emision', width: '150px' },
         { field: 'tipoComprobante', header: 'Tipo Comprobante' },
         { field: 'subtotal', header: 'SubTotal' },
         { field: 'traslado', header: 'Traslado' },
@@ -128,9 +134,9 @@ const Facturas = () => {
     const btnImage = (rowData) => {
         return (
             <img
-                src="img/pdf_icon.png" alt="PDF"
+                src={`${path_img}`} alt="PDF"
                 className="h-auto max-w-s"
-                style={{ cursor: 'pointer', width: '30px' }}
+                style={{ cursor: 'pointer', width: '40px' }}
                 onClick={() => downloadPDFClick(rowData.id_factura)}
             />
             // <div>
@@ -153,7 +159,7 @@ const Facturas = () => {
         const idfactura = id_factura;
         try {
             // const res = await fetch("http://127.0.0.1:8000/api/downloadpdf", {
-            const res = await fetch("https://api.grupo-citi.com/api/downloadpdf", {
+            const res = await fetch("https://apis.grupo-citi.com/api/downloadpdf", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -195,6 +201,7 @@ const Facturas = () => {
         if (dataCfdis.length === 0) {
             // Si no hay facturas seleccionadas, mostrar advertencia
             setShowWarning(true);
+            setLoading(false);
             return;
         }
 
@@ -203,7 +210,7 @@ const Facturas = () => {
         // console.log(dataCfdis);
         try {
             // const res = await fetch("http://127.0.0.1:8000/api/downloadzip", {
-            const res = await fetch("https://api.grupo-citi.com/api/downloadzip", {
+            const res = await fetch("https://apis.grupo-citi.com/api/downloadzip", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -221,12 +228,15 @@ const Facturas = () => {
                 let nameZip = data.nombreZip;
                 let fileBase64 = data.file_base64;
                 downloadZip(fileBase64, nameZip);
+                setSelectedRows([]);
             } else {
                 setError('Error en la conexión '.data.error);
+                setLoading(false);
             }
 
         } catch (err) {
             setError('Error en la conexión ' + err);
+            setLoading(false);
         } finally {
             setLoading(false);
         }
@@ -264,39 +274,45 @@ const Facturas = () => {
 
     return (
         <div>
-            <h1>CFDIS</h1>
-            {loading && <p>Cargando...</p>}
-            {error && <p>{error}</p>}
-
+            {/* <h1>CFDIS</h1> */}
+            {loading &&
+                <div className='mt-1'><Spinner /></div>
+            }
             {/* Mostrar advertencia si no se selecciona ninguna factura */}
-            {showWarning && <p style={{ color: 'red' }}>Debe seleccionar al menos una factura.</p>}
+            {showWarning &&
+                <div className='mt-3'>
+                    <Mensaje showError={showWarning} showText='Debe seleccionar al menos una factura.' />
+                </div>
+            }
 
 
 
-            <button type="button" onClick={descargarZip} class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Descargar Zip</button>
+            <button type="button" onClick={descargarZip} class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 mt-9">Descargar Zip</button>
             {/* Mostrar los IDs seleccionados */}
             <div>
                 <h3>Facturas Seleccionadas: {mostrarFacturasSeleccionadas()}</h3>
             </div>
-
             <DataTable
                 value={cfdis}
                 dataKey="id_factura"
                 paginator
                 rows={rowsPerPage}
                 first={first}
+                size="large"
                 onPage={handlePageChange}
                 rowsPerPageOptions={[2, 4, 6]}
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
+                className="w-full border border-gray-700 rounded-lg shadow-lg"
+
             >
                 <Column
                     header={renderHeaderCheckbox}
                     body={renderCheckbox}
-                    headerStyle={{ width: '3rem' }}
+                    headerStyle={{ width: '30rem' }}
                 />
                 {Columns.map((col, i) => (
-                    <Column key={col.field || i} field={col.field} header={col.header} body={col.body} />
+                    <Column key={col.field || i} field={col.field} header={col.header} body={col.body} style={{ width: col.width }} />
                 ))}
                 <Column
                     header="Descargar"

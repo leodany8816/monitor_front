@@ -2,14 +2,15 @@
 import Layout from "../layouts/Layout.astro";
 import Facturas  from "../components/Cfdis.jsx";
 import Header from "../components/Header.astro";
+import { PrimeReactProvider } from "primereact/api";
 ---
 
 <Layout title="Monitor Web">
     <main>
         <!-- <section class="scroll-m-20 w-full mx-auto container bg-white rounded-lg shadow dark:bg-gray-900 m-4"> -->
-         <section class="scroll-m-20 w-full mx-auto container bg-white  m-4">
+         <section class="scroll-m-20 w-full mx-auto container m-4">
             <Header />
-            <h1>Se inicia la sección <span id="idEmpresa"></span></h1>
+            <!-- <h1>Se inicia la sección <span id="idEmpresa"></span></h1> -->
             <Facturas client:only="react" />
             <!-- <Facturas client:load /> -->
         </section>
