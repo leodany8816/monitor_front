@@ -1,30 +1,47 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Button } from 'primereact/button';
-import Spinner from './spinner';
+import { Calendar } from 'primereact/calendar';
+import { addLocale } from 'primereact/api';
+import Spinner from './Spinner';
 import Mensaje from './Message';
 
-// import 'primereact/resources/themes/bootstrap4-dark-blue/theme.css';  // O el tema que prefieras
-// import 'primereact/resources/primereact.min.css';
-// import 'primeicons/primeicons.css';
-
 const Facturas = () => {
+    const dt = useRef(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [cfdis, setCfdis] = useState([]); // Almacenar CFDIs
     // const [selectedRows, setSelectedRows] = useState([]); // Almacenar filas seleccionadas
     const [selectedRows, setSelectedRows] = useState([]); // Filas seleccionadas
     const [first, setFirst] = useState(0); // Índice de la primera fila visible en la página actual
-    const [rowsPerPage, setRowsPerPage] = useState(2); // Cantidad de filas por página
+    const [rowsPerPage, setRowsPerPage] = useState(50); // Cantidad de filas por página
     const [showWarning, setShowWarning] = useState(false); // Para mostrar mensaje si no se seleccionan facturas
+    const [filteredCfdis, setFilteredCfdis] = useState([]); // Datos filtrados
+    const [rangeDates, setRangeDates] = useState(null); // Estado para el rango de fechas
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [message, setMessage] = useState([]);
     const path_img = 'https://bekaert.grupo-citi.com/img/pdf_icon.png';
+
+
+    // Configuración de localización para el formato de México (DD/MM/YYYY)
+    addLocale('es', {
+        firstDayOfWeek: 1,
+        dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+        dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+        dayNamesMin: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
+        monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+        monthNamesShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+        today: 'Hoy',
+        clear: 'Limpiar',
+        dateFormat: 'dd-mm-yy',
+    });
 
 
     useEffect(() => {
         const fetchCfdis = async () => {
             setLoading(true);
-            setError(null);
+            // setError(null);
 
             try {
                 // const res = await fetch("http://127.0.0.1:8000/api/cfdi", {
@@ -38,8 +55,10 @@ const Facturas = () => {
 
                 const data = await res.json();
                 setCfdis(data.cfdis);
+                setFilteredCfdis(data.cfdis);
             } catch (err) {
-                setError('Error en la conexión ' + err);
+                setMessage('Error en la conexión: ' + err);
+                setShowWarning(true);
             } finally {
                 setLoading(false);
             }
@@ -47,29 +66,59 @@ const Facturas = () => {
         fetchCfdis();
     }, []);
 
+    // Función para aplicar el filtro de rango de fechas
+    const applyDateFilter = () => {
+        setLoading(true);
+        setShowWarning(false);
+        setTimeout(() => {
+            if (startDate && endDate) {
+                if (startDate < endDate) {
+                    const filteredData = cfdis.filter(cfdi => {
+                        const cfdiDate = new Date(cfdi.fechaEmision.split('-').reverse().join('-')); // Convertir la fecha
+                        // const cfdiDate = new Date(cfdi.fechaEmision); // Convertir la fecha
+                        console.log('fechas ' + cfdiDate);
+                        return cfdiDate >= startDate && cfdiDate <= endDate;
+
+                    });
+                    setFilteredCfdis(filteredData);
+                    setLoading(false);
+                } else {
+                    console.log('error');
+                    setMessage('La fecha inicial no debe de ser mayor a la fecha fin');
+                    setShowWarning(true);
+                    setLoading(false);
+                }
+            } else {
+                setMessage('Tienes que seleccionar un rango de fecha');
+                setShowWarning(true);
+
+            }
+            setLoading(false);
+        }, 100);
+    };
+    // Función para limpiar el filtro
+    const clearDateFilter = () => {
+        setStartDate(null);
+        setEndDate(null);
+        setFilteredCfdis(cfdis); // Restablece los datos originales
+    };
+
     const Columns = [
-        { field: 'emisor', header: 'Emisor', width: '150px' },
+        // { field: 'emisor', header: 'Emisor',  style: { width: '3.5rem', backgroundColor: '#c40000' }  },
+        // { field: 'emisor', header: 'Emisor',  className:'column-fecha_emisor' },
+        { field: 'emisor', header: 'Emisor' },
         { field: 'emisorRfc', header: 'Rfc Emisor' },
         { field: 'serie', header: 'Serie' },
         { field: 'folio', header: 'Folio' },
         { field: 'receptor', header: 'Receptor' },
         { field: 'receptorRfc', header: 'Rfc Receptor' },
-        { field: 'fechaEmision', header: 'Fecha Emision', width: '150px' },
+        // { field: 'fechaEmision', header: 'Fecha Emision', className: 'column-fecha_emisor ', sortable:'sortable'},
+        { field: 'fechaEmision', header: 'Fecha Emision', className: 'column-fecha_emisor'},
         { field: 'tipoComprobante', header: 'Tipo Comprobante' },
         { field: 'subtotal', header: 'SubTotal' },
         { field: 'traslado', header: 'Traslado' },
         { field: 'retencion', header: 'Retencion' },
         { field: 'total', header: 'Total' },
-        {
-            // header: ''
-            // body: () => (
-            //     <div className="flex items-center">
-            //         <img className="h-auto max-w-s" src="img/pdf_icon.png" alt="PDF" />
-            //         <img className="h-auto max-w-s" src="img/zip_icon.png" alt="ZIP" onClick={renderDomwnloadPdf} />
-            //     </div>
-            // ),
-            // header: 'Descarga'
-        },
     ];
 
 
@@ -139,23 +188,12 @@ const Facturas = () => {
                 style={{ cursor: 'pointer', width: '40px' }}
                 onClick={() => downloadPDFClick(rowData.id_factura)}
             />
-            // <div>
-            //     <a href="https://google.com" target='_blank'>
-            //     <img
-            //         src="img/pdf_icon.png" alt="PDF"
-            //         className="h-auto max-w-s"
-            //         style={{ cursor: 'pointer', width: '30px' }}
-            //     //onClick={() => handleImageClick(rowData.id_factura)}
-            //     />
-            //     </a>
-            // </div>
         );
     }
 
     // Funcion para manejar el click la imagen para mostrar el pdf
     const downloadPDFClick = async (id_factura) => {
         setLoading(true);
-        setError(null);
         const idfactura = id_factura;
         try {
             // const res = await fetch("http://127.0.0.1:8000/api/downloadpdf", {
@@ -177,10 +215,13 @@ const Facturas = () => {
                 let fileBase64 = data.file_base64;
                 downloadPdf(fileBase64, namePdf);
                 // abrirFilePdf(fileBase64);
+            } else {
+
             }
 
         } catch (err) {
-            setError('Error en el servicio ' + err);
+            setMessage('Error en el servicio ' + err);
+            setShowWarning(true);
         } finally {
             setLoading(false);
         }
@@ -196,16 +237,18 @@ const Facturas = () => {
     /**Se envian la data de los cfdis para descargar el zip  */
     const descargarZip = async () => {
         setLoading(true);
-        setError(null);
         const dataCfdis = mostrarFacturasSeleccionadas();
+        setShowWarning(false);
         if (dataCfdis.length === 0) {
+            console.log('error 2')
             // Si no hay facturas seleccionadas, mostrar advertencia
+            setMessage('Debes de seleccionar al menos una factura.');
             setShowWarning(true);
             setLoading(false);
             return;
         }
 
-        setShowWarning(false); // Ocultar la advertencia si hay selección
+        // setShowWarning(false); // Ocultar la advertencia si hay selección
         // console.log('son los que se van enviar');
         // console.log(dataCfdis);
         try {
@@ -224,18 +267,21 @@ const Facturas = () => {
             const data = await res.json();
             // console.log('respuesta de la descarga');
             // console.table(data);
+
             if (data.exito) {
                 let nameZip = data.nombreZip;
                 let fileBase64 = data.file_base64;
                 downloadZip(fileBase64, nameZip);
                 setSelectedRows([]);
             } else {
-                setError('Error en la conexión '.data.error);
+                setMessage(data.error);
+                setShowWarning(true);
                 setLoading(false);
             }
 
         } catch (err) {
-            setError('Error en la conexión ' + err);
+            setMessage('Error en la conexión ' + err);
+            setShowWarning(true);
             setLoading(false);
         } finally {
             setLoading(false);
@@ -259,67 +305,78 @@ const Facturas = () => {
         link.click();
     }
 
-    /// abrir el pdf en una nueva pestaña del navedador
-    // const abrirFilePdf = (pdfBase64) => {
-    //     const source = `data:application/pdf;base64,${pdfBase64}`;
-    //     const newWindows = window.open();
-    //     if (newWindows) {
-    //         newWindows.document.write(
-    //             `<iframe src="${source}" style="width:100%; height:100%;" frameborder="0"></iframe>`
-    //         );
-    //     } else {
-    //         setError('No se pudo abrir una nueva pestaña. Verifica los bloqueadores de ventanas emergentes.');
-    //     }
-    // }
-
     return (
         <div>
-            {/* <h1>CFDIS</h1> */}
-            {loading &&
-                <div className='mt-1'><Spinner /></div>
-            }
-            {/* Mostrar advertencia si no se selecciona ninguna factura */}
-            {showWarning &&
-                <div className='mt-3'>
-                    <Mensaje showError={showWarning} showText='Debe seleccionar al menos una factura.' />
+            <div className="flex align-items-center p-4 md:grid-cols-1">
+                {loading &&
+                    <div className='mt-1'><Spinner /></div>
+                }
+                {/* Mostrar advertencia si no se selecciona ninguna factura */}
+                {showWarning &&
+                    <div className='mt-3'>
+                        <Mensaje showError={showWarning} showText={message} />
+                    </div>
+                }
+            </div>
+            <div className="flex align-items-center gap-3 mb-3 mt-3 p-4 md:grid-cols-4">
+                <div>
+                    <label className="block mb-2 text-lg font-medium text-white">Fecha Inicio:</label>
+                    <Calendar value={startDate} onChange={(e) => setStartDate(e.value)} dateFormat="dd-mm-yy" showIcon locale="es"
+                        className="w-full p-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
+
                 </div>
-            }
+                <div>
+                    <label className="block mb-2 text-lg font-medium text-white">Fecha Fin:</label>
+                    <Calendar value={endDate} onChange={(e) => setEndDate(e.value)} dateFormat="dd-mm-yy" showIcon locale="es"
+                        className="w-full p-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
+                </div>
+                <div className="flex items-end gap-4">
+
+                    <button type="button" onClick={applyDateFilter} className=" px-5 py-1.5 text-lg font-medium text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Filtrar</button>
 
 
 
-            <button type="button" onClick={descargarZip} class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 mt-9">Descargar Zip</button>
-            {/* Mostrar los IDs seleccionados */}
-            <div>
-                <h3>Facturas Seleccionadas: {mostrarFacturasSeleccionadas()}</h3>
+                    <button type="button" onClick={clearDateFilter} className="px-5 py-1.5 text-lg font-medium text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Limpiar</button>
+                </div>
+            </div>
+
+            <div className="flex align-items-center gap-3 mb-2 mt-2 p-4 md:grid-cols-1">
+                <button type="button" onClick={descargarZip} className="px-5 py-1.5 text-lg font-medium text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Descargar Zip</button>
+
+                <button type="button" onClick={() => dt.current.exportCSV({ filename: "Cfdis.csv" })} className="px-5 py-1.5 text-lg font-medium text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Exportar a Excel</button>
             </div>
             <DataTable
-                value={cfdis}
+                value={filteredCfdis}
+                // tableStyle={{ minWidth: 'auto' }}
+                ref={dt}
                 dataKey="id_factura"
                 paginator
                 rows={rowsPerPage}
                 first={first}
-                size="large"
+                // size="large"
                 onPage={handlePageChange}
-                rowsPerPageOptions={[2, 4, 6]}
+                rowsPerPageOptions={[50, 100, 200, 500]}
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
-                className="w-full border border-gray-700 rounded-lg shadow-lg"
+                // className="w-full border border-red-700 rounded-lg shadow-lg"
+                selectionMode="single"
 
             >
                 <Column
                     header={renderHeaderCheckbox}
                     body={renderCheckbox}
-                    headerStyle={{ width: '30rem' }}
+                    headerStyle={{ width: '1030rem' }}
                 />
                 {Columns.map((col, i) => (
-                    <Column key={col.field || i} field={col.field} header={col.header} body={col.body} style={{ width: col.width }} />
+                    // <Column key={col.field || i} field={col.field} header={col.header}  body={col.body}  className="p-column-title column-fecha_emisor"/>
+                    <Column key={col.field || i} field={col.field} header={col.header}  body={col.body} className={`p-column-title ${col.field === 'emisor' ? 'column-fecha_emisor' : ''}`}   headerStyle={{ width: '7rem !important', 'background-color':'yellow' }} />
                 ))}
                 <Column
                     header="Descargar"
                     body={btnImage}
                 />
             </DataTable>
-        </div>
+        </div >
     );
 };
 
