@@ -160,12 +160,3 @@ body {
     color: #fff;
     text-decoration: none;
   }
-
-  .column-emisor {
-    width: 350px !important;
-}
-
-.column-fecha_emisor{
-  width: 7rem !important;
-  background-color: #c40000;
-}

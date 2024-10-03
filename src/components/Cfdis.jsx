@@ -104,16 +104,14 @@ const Facturas = () => {
     };
 
     const Columns = [
-        // { field: 'emisor', header: 'Emisor',  style: { width: '3.5rem', backgroundColor: '#c40000' }  },
-        // { field: 'emisor', header: 'Emisor',  className:'column-fecha_emisor' },
+
         { field: 'emisor', header: 'Emisor' },
         { field: 'emisorRfc', header: 'Rfc Emisor' },
         { field: 'serie', header: 'Serie' },
         { field: 'folio', header: 'Folio' },
         { field: 'receptor', header: 'Receptor' },
         { field: 'receptorRfc', header: 'Rfc Receptor' },
-        // { field: 'fechaEmision', header: 'Fecha Emision', className: 'column-fecha_emisor ', sortable:'sortable'},
-        { field: 'fechaEmision', header: 'Fecha Emision', className: 'column-fecha_emisor'},
+        { field: 'fechaEmision', header: 'Fecha Emision',},
         { field: 'tipoComprobante', header: 'Tipo Comprobante' },
         { field: 'subtotal', header: 'SubTotal' },
         { field: 'traslado', header: 'Traslado' },
@@ -353,12 +351,12 @@ const Facturas = () => {
                 paginator
                 rows={rowsPerPage}
                 first={first}
-                // size="large"
+                size="large"
                 onPage={handlePageChange}
                 rowsPerPageOptions={[50, 100, 200, 500]}
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
-                // className="w-full border border-red-700 rounded-lg shadow-lg"
+                className="w-full border border-red-700 rounded-lg shadow-lg"
                 selectionMode="single"
 
             >
@@ -368,8 +366,7 @@ const Facturas = () => {
                     headerStyle={{ width: '1030rem' }}
                 />
                 {Columns.map((col, i) => (
-                    // <Column key={col.field || i} field={col.field} header={col.header}  body={col.body}  className="p-column-title column-fecha_emisor"/>
-                    <Column key={col.field || i} field={col.field} header={col.header}  body={col.body} className={`p-column-title ${col.field === 'emisor' ? 'column-fecha_emisor' : ''}`}   headerStyle={{ width: '7rem !important', 'background-color':'yellow' }} />
+                    <Column key={col.field || i} field={col.field} header={col.header}  body={col.body}  />
                 ))}
                 <Column
                     header="Descargar"
