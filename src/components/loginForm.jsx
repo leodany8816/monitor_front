@@ -35,11 +35,8 @@ const Login = () => {
             // const response = await fetch('http://127.0.0.2:8000/api/login', {
             const response = await fetch('https://apis.grupo-citi.com/api/login', {
                 method: 'POST',
-                //credentials: 'includes',  // Incluir credenciales como cookies
                 headers: {
                     'Content-Type': 'application/json',
-                    // 'X-CSRF-TOKEN': `Bearer 1|${csrfToken}`,
-                    //'Accept': 'application/json',
 
                 },
                 body: JSON.stringify({ usuario, password }),

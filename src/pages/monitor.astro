@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import Facturas  from "../components/Cfdis.jsx";
 import Header from "../components/Header.astro";
-import { PrimeReactProvider } from "primereact/api";
+import Footer from "../components/Footer.astro";
 ---
 
 <Layout title="Monitor Web">
@@ -13,6 +13,7 @@ import { PrimeReactProvider } from "primereact/api";
             <!-- <h1>Se inicia la sección <span id="idEmpresa"></span></h1> -->
             <Facturas client:only="react" />
             <!-- <Facturas client:load /> -->
+            <Footer/>
         </section>
     </main>
 </Layout>

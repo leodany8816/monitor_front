@@ -14,7 +14,7 @@ const Facturas = () => {
     // const [selectedRows, setSelectedRows] = useState([]); // Almacenar filas seleccionadas
     const [selectedRows, setSelectedRows] = useState([]); // Filas seleccionadas
     const [first, setFirst] = useState(0); // Índice de la primera fila visible en la página actual
-    const [rowsPerPage, setRowsPerPage] = useState(50); // Cantidad de filas por página
+    const [rowsPerPage, setRowsPerPage] = useState(10); // Cantidad de filas por página
     const [showWarning, setShowWarning] = useState(false); // Para mostrar mensaje si no se seleccionan facturas
     const [filteredCfdis, setFilteredCfdis] = useState([]); // Datos filtrados
     const [rangeDates, setRangeDates] = useState(null); // Estado para el rango de fechas
@@ -345,7 +345,6 @@ const Facturas = () => {
             </div>
             <DataTable
                 value={filteredCfdis}
-                // tableStyle={{ minWidth: 'auto' }}
                 ref={dt}
                 dataKey="id_factura"
                 paginator
@@ -353,10 +352,10 @@ const Facturas = () => {
                 first={first}
                 size="large"
                 onPage={handlePageChange}
-                rowsPerPageOptions={[50, 100, 200, 500]}
+                rowsPerPageOptions={[10, 25, 50, 100, 200, 500]}
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
-                className="w-full border border-red-700 rounded-lg shadow-lg"
+                // className="w-full border border-red-700 rounded-lg shadow-lg"
                 selectionMode="single"
 
             >
