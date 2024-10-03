@@ -1,10 +1,22 @@
+import { useEffect } from 'react';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 const Spinner = () => {
+
+    useEffect(() => {
+        // Bloquear el scroll al mostrar el spinner
+        document.body.classList.add('overflow-hidden');
+
+        // Limpiar el efecto (restaurar el scroll) cuando el spinner se oculta o el componente se desmonta
+        return () => {
+            document.body.classList.remove('overflow-hidden');
+        };
+    }, []);
+    
     return (
         <div
         style={{
-            position: 'absolute',
+            position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
@@ -14,9 +26,10 @@ const Spinner = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            overflow:'hidden'
         }}
         >
-            <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />
+            <ProgressSpinner style={{ width: 'l50px', height: '150px' }} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />
         </div>
     )
 }

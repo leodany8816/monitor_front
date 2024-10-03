@@ -3,14 +3,13 @@ import { Message } from 'primereact/message';
 
 const Mensaje = ({ showError, showText }) => {
     const [showMessage, setShowMessage] = useState(false); // Iniciar como falso
-
     useEffect(() => {
         if (showError) {
             setShowMessage(true); // Mostrar el mensaje cuando detectamos un error
 
             const timer = setTimeout(() => {
-                setShowMessage(false); // Ocultar el mensaje después de 5 segundos
-            }, 3000);
+                setShowMessage(false);
+            }, 5000);
 
             return () => clearTimeout(timer); // Limpiar el temporizador si el componente se desmonta o el error cambia
         }
@@ -18,6 +17,7 @@ const Mensaje = ({ showError, showText }) => {
 
     return (
         <div>
+            
             {showMessage && (
                 <Message severity="error" text={showText} />
             )}
